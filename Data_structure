@@ -1,0 +1,13 @@
+type Program = List Statement
+
+data Statement =
+  Sequence Sequence |
+  Play (List (Tuple String Int))
+
+type Sequence = Map String (List ParamValue)
+
+data ParamValue =
+  ParamNumber Number |
+  ParamString String
+
+  

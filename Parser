@@ -1,0 +1,27 @@
+type Program = List Statement
+
+data Statement =
+  Sequence Sequence |
+  Play (List (Tuple String Int))
+
+type Sequence = Map String (List ParamValue)
+
+data ParamValue =
+  ParamNumber Number |
+  ParamString String
+
+
+-- examples of representing top examples using above data structure
+
+Play ( Tuple "sequence_1" 2 : Nil )
+Play ( Tuple "sequence_1" 2 : Tuple "sequence_3" 1 : Tuple "sequence_4" 1 : Tuple "sequence_5" 6 :  Nil)
+
+Sequence (
+  fromList [
+    ("t", (ParamNumber 1 : ParamNumber 0.5 : ParamNumber 0.25 : Nil)),
+    ("s", (ParamString "gtr" : Nil))
+  ]
+)
+
+-- top level parser
+-- test lower level parsers

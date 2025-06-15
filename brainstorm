@@ -1,0 +1,111 @@
+-- modify list which is a sequence of looping events
+-- elements of list represent sound events
+-- continuosly modify list in real-time to produce different sounds 
+-- additive: when adding to sequence, it becomes longer
+
+VERSION 1
+-- guitar sample plays for specified amount of time in seconds
+Seq sequence_1 = {gtr >> [1, 0.5, 0.25]; -- [(gtr, 1), (gtr, 0.5), (gtr, 0.25)]
+    amp [0.9,0.7,0.5];
+    reverb 3}
+
+-- Plays sequence_1 2 times 
+Play 2 sequence_1 
+
+-- Adds a gtr sample of length 0.25 to sequence_1, and plays it twice
+Play 2 (sequence_1 ++ 0.25)
+-- [(gtr, 1), (gtr, 0.5), (gtr, 0.3), (gtr, 0.25)]
+
+Seq sequence_2 = {[gtr, bd, hh, sn, sn] >> [1, 1, 0.5, 0.25, 0.25]; -- [(gtr, 1), (bd, 1), (hh, 0.5), (sn, 0.25), (sn, 0.25)]
+    crescendo 0.2 1 -- first note played at amp 0.2, each note increases in amp till last is amp 1
+    }
+
+-- Plays sequence_1 then sequence_2, and repeats once more
+Play 2 [sequence_1 ++ sequence_2]
+
+----------------------------------------
+
+VERSION 2
+-- play gtr sample for all notes
+-- half note and quarter notes
+-- tempo set by bpm and time signature
+Seq sequence_1 = {gtr >> [1/2, 1/4, 1/4];
+    bpm 100;
+    time 4|4;
+    amp 0.9 }
+
+-- plays sequence_1 10 times
+Play 10 sequence_1 
+
+-- above can also be written as follows
+Seq sequence_1 = {gtr >> [1/2, 1/4, 1/4]; bpm 100; time 4|4; amp 0.9}
+
+Play 5 sequence_1
+
+-- specify sample for each note
+Seq sequence_2  = [gtr, gtr, bd] >> [1/2, 1/4, 1/4]
+-- represented as [(gtr, 1/2), (gtr, 1/4), (bd, 1/4)]
+    bmp 100
+    time 4|4
+    amp 0.9
+
+Play inf [sequence_1, sequence_2]
+---------------------------------------
+
+VERSION 3
+-- same idea as above, except cycle length is determined in seconds
+Seq sequence_1 = {gtr >> [1/2, 1/4, 1/4];
+    cycle 2;  -- each cycle lasts 2 seconds, 1/2 plays for half of cycle, 1/4 plays for quarter of cycle
+    amp 0.9}
+
+Play 2 (sequence_1 ++ 1/4)
+-- adds a quarter note to the sequence: [1/2, 1/4, 1/4, 1/4]
+
+---------------------------------------
+-- Wed July 28 meeting
+
+-- sequence is made up of parameters t (length of sample in seconds) and s (sample)
+sequence_1 = {
+    t [1,0.5,0.25];
+    s gtr; -- or: s [gtr,bd]
+}
+
+-- Plays sequence_1 2 times 
+Play 2 sequence_1  -- [("sequence_1",2)]
+sequence_1 2
+sequence_1.play
+sequence_1.play(2)
+play(sequence_1)
+play(sequence_1,2)
+play sequence_1 2 sequence_3 sequence_4 sequence_5 6
+-- [("sequence_1",2),("sequence_3",1),("sequence_4",1),("sequence_5",6)]
+
+-- everything above is notation examples...
+-- everything below is PureScript data structures....
+
+type Program = List Statement
+
+data Statement =
+  Sequence Sequence |
+  Play (List (Tuple String Int))
+
+type Sequence = Map String (List ParamValue)
+
+data ParamValue =
+  ParamNumber Number |
+  ParamString String
+
+
+-- examples of representing top examples using above data structure
+
+Play ( Tuple "sequence_1" 2 : Nil )
+Play ( Tuple "sequence_1" 2 : Tuple "sequence_3" 1 : Tuple "sequence_4" 1 : Tuple "sequence_5" 6 :  Nil)
+
+Sequence (
+  fromList [
+    ("t", (ParamNumber 1 : ParamNumber 0.5 : ParamNumber 0.25 : Nil)),
+    ("s", (ParamString "gtr" : Nil))
+  ]
+)
+
+-- fromFoldable
